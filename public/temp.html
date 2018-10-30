@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Temperatura FIEC</title>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: black;
+            background: #96e6a1;
+            background-image: linear-gradient(90deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
+
+        .wrapper {
+            width: 100%;
+            text-align: center;
+        }
+
+        .ct-label,
+        .ct-grid,
+        .ct-axis-title {
+            color: black;
+            fill: black;
+        }
+
+        .bigtemp {
+            font-size: 50px;
+            font-weight: 700;
+            color: #d70206;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1>Temperatura FIEC</h1>
+        <div class="bigtemp"><span class="actual">0</span>°C</div>
+        <div class="ct-chart"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        function render(data) {
+            var options = {
+                height: 400,
+                high: 50,
+                low: 0,
+                fullWidth: true,
+                showArea: true,
+                showLine: false,
+                //showPoint: false,
+                axisX: {
+                    showLabel: false,
+                    offset: 0
+                },
+            };
+            var responsiveOptions = [
+                ['screen and (min-width: 641px) and (max-width: 1024px)', {
+                    showPoint: false
+                }],
+                ['screen and (max-width: 640px)', {
+                    showLine: false
+                }]
+            ];
+            new Chartist.Line('.ct-chart', data, options, responsiveOptions);
+        }
+
+        function addData(rawData) {
+            var data = {
+                labels: [],
+                series: [[]]
+            };
+            for (var i = 0; i < rawData.length; i++) {
+                data.series[0].unshift(rawData[i].grados);
+                data.labels.unshift(new Date(rawData[i].created_at).toLocaleTimeString());
+            }
+            $(".actual").text(rawData[0].grados);
+            $("title").text("Temperatura FIEC " + rawData[0].grados + "°C");
+            render(data);
+        }
+
+        setInterval(function () {
+            $.getJSON("http://192.168.0.5:3000/temperaturas.json", addData)
+        }, 1000);
+    </script>
+</body>
+
+</html>
